@@ -1,0 +1,25 @@
+# E-Commerce UK Retailer — Dependencias del proyecto
+# Instalar con: pip install -r requirements.txt
+
+# Manipulación de datos
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualización estática
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Tests estadísticos (NB1)
+scipy>=1.11.0
+
+# Exportación Excel (NB3, NB5)
+openpyxl>=3.1.0
+
+# Dashboard interactivo (NB6)
+plotly>=5.18.0
+dash>=2.14.0
+dash-bootstrap-components>=1.5.0
+
+# Jupyter
+jupyter>=1.0.0
+ipython>=8.0.0

@@ -1,0 +1,234 @@
+// ============================================================
+//  E-Commerce UK Retailer — Modelo Relacional (Star Schema híbrido)
+//  14 tablas · 27 relaciones FK · 0 huérfanas
+//  Compatible con dbdiagram.io — pegar en https://dbdiagram.io
+// ============================================================
+
+Project ecommerce_uk {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Star Schema híbrido sobre el dataset Kaggle E-Commerce Data (carrie1).
+    2 fact tables + 5 dimensiones + 7 tablas operativas.
+    27 relaciones FK verificadas (0 huérfanas). CustomerID = -1 para ventas Guest.
+  '''
+}
+
+// ─────────────────────────── HECHOS ───────────────────────────
+
+Table fact_ventas {
+  SaleLineID int [pk, note: 'PK subrogada']
+  InvoiceNo varchar
+  DateKey int [ref: > dim_fecha.DateKey]
+  StockCode varchar [ref: > dim_producto.StockCode]
+  CustomerID int [ref: > dim_cliente.CustomerID, note: '-1 = Guest']
+  Country varchar [ref: > dim_pais.Country]
+  Quantity int
+  UnitPrice decimal
+  Revenue decimal
+  IsCancellation boolean
+  Note: '532.328 filas — ventas y cancelaciones de productos'
+}
+
+Table fact_ajustes_inventario {
+  AdjLineID int [pk, note: 'PK subrogada']
+  InvoiceNo varchar
+  DateKey int [ref: > dim_fecha.DateKey]
+  StockCode varchar [ref: > dim_producto.StockCode]
+  Quantity int
+  Revenue decimal
+  Note: '1.324 filas — bajas de inventario'
+}
+
+// ───────────────────────── DIMENSIONES ─────────────────────────
+
+Table dim_producto {
+  ProductID int [pk]
+  StockCode varchar [unique, note: 'clave natural (FK destino)']
+  Description_canonical varchar
+  is_active boolean
+  has_adjustments boolean
+  n_ventas int
+  revenue_total decimal
+  primera_venta datetime
+  ultima_venta datetime
+  n_ajustes int
+  qty_ajuste_total int
+  Note: '3.926 filas — UNION de SC de ventas + ajustes'
+}
+
+Table dim_cliente {
+  ClienteID int [pk]
+  CustomerID int [unique, note: 'clave natural (FK destino) · -1 = Guest']
+  Segment varchar
+  Country_principal varchar
+  IsGuest boolean
+  n_facturas int
+  revenue_total decimal
+  ticket_promedio decimal
+  primera_compra datetime
+  ultima_compra datetime
+  n_paises int
+  Note: '4.364 filas — segmentos Mayorista/Retail/Guest'
+}
+
+Table dim_fecha {
+  DateKey int [pk, note: 'YYYYMMDD']
+  Date date
+  Year int
+  Quarter int
+  QuarterName varchar
+  Month int
+  MonthNameES varchar
+  Week int
+  Day int
+  DayOfWeek varchar
+  DayOfWeekES varchar
+  DayNumber int
+  IsWeekend boolean
+  IsSaturday boolean
+  Note: '396 filas — generada con pd.date_range (incluye días sin actividad)'
+}
+
+Table dim_pais {
+  Country varchar [pk, note: 'clave natural']
+  Region varchar
+  Segment varchar
+  IsUK boolean
+  IsMayorista boolean
+  n_clientes int
+  n_facturas int
+  revenue_total decimal
+  ticket_avg decimal
+  Note: '38 filas — PK natural Country'
+}
+
+Table dim_concepto {
+  ConceptoID int [pk]
+  StockCode varchar [unique, note: 'clave natural (FK destino)']
+  Descripcion varchar
+  TablaProcedencia varchar
+  TipoConcepto varchar
+  CID_patron varchar
+  Revenue_total decimal
+  n_filas int
+  Note: '32 filas — lookup de StockCodes admin de las 7 tablas operativas'
+}
+
+// ─────────────────────── TABLAS OPERATIVAS ───────────────────────
+
+Table dim_envios {
+  EnvioLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  CustomerID int [ref: > dim_cliente.CustomerID]
+  Country varchar [ref: > dim_pais.Country]
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '2.110 filas — cargos de envío POST, DOT, C2'
+}
+
+Table dim_ajustes_contables {
+  AjusteLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  CustomerID int [ref: > dim_cliente.CustomerID]
+  Country varchar [ref: > dim_pais.Country]
+  is_negative_price boolean
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '570 filas — ajustes manuales M y bad debt B'
+}
+
+Table dim_conceptos_directo {
+  ConceptoDirLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  CustomerID int [ref: > dim_cliente.CustomerID]
+  Country varchar [ref: > dim_pais.Country]
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '97 filas — descuentos D, comisión CRUK y PADS'
+}
+
+Table dim_conceptos_indirecto {
+  ConceptoIndLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '96 filas — AMAZONFEE y muestras S'
+}
+
+Table dim_conceptos_mixto {
+  ConceptoMixLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  CustomerID int [ref: > dim_cliente.CustomerID]
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '37 filas — BANK CHARGES (CID mixto)'
+}
+
+Table dim_channel_external {
+  ChannelLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '45 filas — canal Dotcomgiftshop/eBay (DCGS)'
+}
+
+Table dim_voucher {
+  VoucherLineID int [pk]
+  InvoiceNo varchar
+  StockCode varchar [ref: > dim_concepto.StockCode]
+  Description varchar
+  Quantity int
+  UnitPrice decimal
+  Revenue decimal
+  DateKey int [ref: > dim_fecha.DateKey]
+  Note: '34 filas — vales de regalo GIFT_0001_XX'
+}
+
+// ─────────────────────── AGRUPACIÓN VISUAL ───────────────────────
+
+TableGroup Hechos {
+  fact_ventas
+  fact_ajustes_inventario
+}
+
+TableGroup Dimensiones {
+  dim_producto
+  dim_cliente
+  dim_fecha
+  dim_pais
+  dim_concepto
+}
+
+TableGroup Operativas {
+  dim_envios
+  dim_ajustes_contables
+  dim_conceptos_directo
+  dim_conceptos_indirecto
+  dim_conceptos_mixto
+  dim_channel_external
+  dim_voucher
+}
