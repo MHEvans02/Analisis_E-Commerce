@@ -1,0 +1,40 @@
+# Dataset original y datos generados
+# Los CSVs se regeneran ejecutando las notebooks en orden
+data/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Checkpoints de Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Entornos virtuales
+venv/
+env/
+.env/
+*.env
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+
+# Distribuciones Python
+dist/
+build/
+*.egg-info/
