@@ -270,5 +270,5 @@ Además incluye el modelo relacional (`Modelado.pdf`), el diagrama de flujo del 
 ## Autor
 
 **Michael Hans Evans**  
-Data Analyst · Córdoba, Argentina  
+Data Analyst ·
 GitHub: [MHEvans02](https://github.com/MHEvans02)
