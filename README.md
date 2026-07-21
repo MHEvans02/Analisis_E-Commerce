@@ -267,8 +267,12 @@ Además incluye el modelo relacional (`Modelado.pdf`), el diagrama de flujo del 
 
 ---
 
-## Autor
+## Contacto
 
-**Michael Hans Evans**  
-Data Analyst ·
-GitHub: [MHEvans02](https://github.com/MHEvans02)
+**Michael Hans Evans** — Data Analyst
+
+* 💻 [GitHub: MHEvans02](https://github.com/MHEvans02)
+* LinkedIn · [michael-hans-evans](https://www.linkedin.com/in/michael-hans-evans-5a9209250)
+* Portfolio · [Notion](https://future-celery-bcc.notion.site/Proyectos-35022028f65080fbad10f671d49da06c)
+* Tableau Public · [Análisis de Churn — Telco](https://public.tableau.com/app/profile/michael.hans.evans)
+* Email · [michael.hans.evans@gmail.com](mailto:michael.hans.evans@gmail.com)
